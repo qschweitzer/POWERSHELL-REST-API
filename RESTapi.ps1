@@ -1,4 +1,51 @@
 
+Function Invoke-PRCommand {
+param(
+    [parameter(Mandatory=$true)]
+    $RequestType,
+    [parameter(Mandatory=$true)]
+    $Request,
+    $Computer
+)
+    $Noresult = "There is something wrong with your query or the result."
+    switch($RequestType)
+    {
+        "get" {
+            try{
+                # Build command
+                $Request = $Request.split("=")[1]
+                if($computer){
+                    # Invoke command on the target computer
+                    $Result = Invoke-Command -ComputerName $Computer -ScriptBlock {$Request} -ErrorAction Stop
+                }else{
+                    # Invoke command on the local computer
+                    $Result = Invoke-Expression -Command $Request -ErrorAction Stop
+                }
+            }catch{
+                # Build response
+                $Result = ("Error: " + $_.Exception.Message)
+            }
+        }
+        "wmi" {
+            try{
+                # Build command
+                $Request = $Request.split("=")[1]
+                if($computer){
+                    # Invoke command on the target computer
+                    $Result = Get-WMIObject $Request -Computer $Computer -ErrorAction Stop | ConvertTo-Json
+                }else{
+                    # Invoke command on the local computer
+                    $Result = Get-WMIObject $Request -ErrorAction Stop | ConvertTo-Json
+                }
+            }catch{
+                # Build response
+                $Result = ("Error: " + $_.Exception.Message)
+            }
+        }
+    }
+    return $Result
+}
+
 $CSVToken = "C:\Windows\Temp\POSH_Restful_API\token.csv"
 
 #Import TOKENS
@@ -20,18 +67,18 @@ while ($true) {
     $request = $context.Request
 
     # Setup a place to deliver a response
-    $response = $context.Response
+    $IPR_Response = $context.Response
    
     # Break from loop if GET request sent to /end
     if ($request.Url -match '/kill') { 
         break 
-    } else {
+    }else{
 
         # Split request URL to get command and options
         $requestvars = ([String]$request.Url).split("/")
         if($requestvars.Count -le "3"){
-            $message = "Your request is not correct. Please look at the help of the API."
-            $response.ContentType = 'text/html'
+            $IPR_Return = "Your request is not correct. Please look at the help of the API."
+            $IPR_Response.ContentType = 'text/html'
             break
         }
         else{
@@ -46,67 +93,58 @@ while ($true) {
                     $iurl = 5
                 }
 
-                # If a request is sent to http:// :8000/wmi
+                # If a request is sent to http://:8000/
+                # The switch may help to select the action type requested
                 Switch($requesttype){
                     
                     "wmi" {
                 
-                        # Get the class name and server name from the URL and run get-WMIObject
-                        $result = get-WMIObject $requestvars[$iurl] -computer $computer
-
-                        # Convert the returned data to JSON and set the HTTP content type to JSON
-                        $message = $result | ConvertTo-Json
-                        $response.ContentType = 'application/json'
-
+                        # Start the function Invoke-PRCommand with parameters
+                        $IPR_Return = Invoke-PRCommand -requesttype Wmi -request $requestvars[$iurl] -Computer $computer
+                        $IPR_Return.gettype()
+                        if($IPR_Return -like "Error:*"){
+                            $IPR_Response.ContentType = 'text/html'
+                        }else{
+                            # Convert the returned data to JSON and set the HTTP content type to JSON
+                            $IPR_Response.ContentType = 'application/json'
+                        }
                     }
 
                     "get" {
-                        if($requestvars[$iurl] -like "command=*"){
-                            # Build command
-                            $command = $requestvars[$iurl].split("=")[1]
-                            if($computer){
-                                $result = Invoke-Expression -Command $command -computer $computer -ErrorAction SilentlyContinue -ErrorVariable InvokeError
-                            }
-                            else{
-                                $result = Invoke-Expression -Command $command -ErrorAction SilentlyContinue -ErrorVariable InvokeError
-                            }
-                        }else{
-                            # Build response
-                            $InvokeError = "There is something wrong with your query or the result."
-                        }
+                        # Start the function Invoke-PRCommand with parameters
+                        $IPR_Return = Invoke-PRCommand -requesttype Get -request $requestvars[$iurl] -Computer $computer
                         
-                        if($InvokeError){
-                            $message = "There is something wrong with your query or the result."
-                            $response.ContentType = 'text/html'
+                        if($IPR_Return -like "Error:*"){
+                            $IPR_Response.ContentType = 'text/html'
                         }else{
                             # Convert the returned data to JSON and set the HTTP content type to JSON
-                            $message = $result | ConvertTo-Json
-                            $response.ContentType = 'application/json'
+                            $IPR_Return = $IPR_Return | ConvertTo-Json
+                            $IPR_Response.ContentType = 'application/json'
                         }
                     }
 
                     Default {
                         # If no matching subdirectory/route is found generate a 404 message
-                        $message = "This is not the page you're looking for."
-                        $response.ContentType = 'text/html'
+                        $IPR_Return = "This is not the page you're looking for."
+                        $IPR_Response.ContentType = 'text/html'
                     }
                 }
             }else{
-                $message = "You don't have a valid token"
-                $response.ContentType = 'text/html'
+                $IPR_Return = "You don't have a valid token"
+                $IPR_Response.ContentType = 'text/html'
             }
             # Convert the data to UTF8 bytes
-            [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($message)
+            [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($IPR_Return)
             
             # Set length of response
-            $response.ContentLength64 = $buffer.length
+            $IPR_Response.ContentLength64 = $buffer.length
             
             # Write response out and close
-            $output = $response.OutputStream
+            $output = $IPR_Response.OutputStream
             $output.Write($buffer, 0, $buffer.length)
             $output.Close()
         }
-   }    
+    }
 }
  
 #Terminate the listener
