@@ -9,6 +9,9 @@ Based on the API concept, this project want to simplify the use of Powershell qu
 You should be able to make a dashboard with POSH queries without any Powershell line.
 You are able to request some information to a server with Powershell command and have a JSON result if it works or a text result with the error description if it doesn't.
 
+Start the POSH API script on a server or computer which can access to others devices with Powershell and run.
+It also works with local computer/server.
+
 ## How to use
 ### Create Token
 You have to create a token manually on a file called token.csv: C:\Windows\Temp\Posh_Restful_api\token.csv
@@ -21,6 +24,7 @@ Start the .ps1 file ans the API will be alive.
 start from http://localhost:8000
 
 ### Use API
+**If you don't specify a computer the request will be executed on the local hosting script machine.**
 #### GET
 To use the API, simply do a GET query to http://localhost:8000/token=yourtoken/(optional:computer=targetcomputer)/get/command=get-help
 for example.
