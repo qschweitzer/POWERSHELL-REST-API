@@ -2,7 +2,7 @@
 A Very Simple REST API
 Based on the idea and script of http://hkeylocalmachine.com/?p=518
 
-**Don't use it in a production environnent. It's a Proof Of Concept project, maybe after a lot of commit and improvment this idea will be really safe and usefull but it's not the case for now.**
+**Don't use it in a production environment. It's a Proof Of Concept project, maybe after a lot of commit and improvment this idea will be really safe and usefull but it's not the case for now.**
 
 ## Concept
 Based on the API concept, this project want to simplify the use of Powershell querying from another language, another plateform.
