@@ -30,6 +30,12 @@ To use the API, simply do a GET query to http://localhost:8000/token=yourtoken/(
 for example.
 The API will return a JSON formatted result. If error, there is a text result displayed.
 You could use a web browser to query something or use other programming language to query.
+
+Query tested:
+- Get-Disk
+- Get-Process
+- Get-Service
+- Get-Service|?{$_.Name -match "Adobe"}
 #### WMI
 There is a WMI query type but it's actually limited.
 http://localhost:8000/token=yourtoken/(optional:computer=targetcomputer)/wmi/query
