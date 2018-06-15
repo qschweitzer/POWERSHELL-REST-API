@@ -36,6 +36,7 @@ Query tested:
 - Get-Process
 - Get-Service
 - Get-Service|?{$_.Name -match "Adobe"}
+- Get-ChildItem -Path "C:" | foreach {Get-ChildItem -Path $_.FullName}
 #### WMI
 There is a WMI query type but it's actually limited.
 http://localhost:8000/token=yourtoken/(optional:computer=targetcomputer)/wmi/query
