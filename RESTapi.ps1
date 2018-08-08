@@ -1,40 +1,103 @@
+<#
+
+CODES STATUS
+
+200 OK Tout s'est bien passé
+
+201 Created La création de la ressource s'est bien passée (il n’est pas rare que les attributs de la nouvelle ressource soient aussi renvoyées dans la réponse. Dans ce cas, l’URL de cette ressource nouvellement créée est ajouté via un header Location )
+
+204 No content Même principe que pour la 201, sauf que cette fois-ci, le contenu de la ressource nouvellement créée ou modifiée n'est pas renvoyée en réponse
+
+304 Not modified Le contenu n'a pas été modifié depuis la dernière fois qu'elle a été mise en cache
+
+400 Bad request La demande n'a pas pu être traitée correctement
+
+401 Unauthorized L'authentification a échoué
+
+403 Forbidden L'accès à cette ressource n'est pas autorisé
+
+404 Not found La ressource n'existe pas
+
+405 Method not allowed La méthode HTTP utilisée n'est pas traitable par l'API
+
+406 Not acceptable L’API est dans l’incapacité de fournir le format demandé par les en têtes Accept. Par exemple, le client demande un format (XML par exemple) et l'API n'est pas prévue pour générer du XML
+
+500 Server error Le serveur a rencontré un problème.
+
+#>
 Function Invoke-PRCommand {
 param(
     [parameter(Mandatory=$true)]
     $RequestType,
     [parameter(Mandatory=$true)]
-    $Request,
-    $Computer
+    $URL
 )
     $Noresult = "There is something wrong with your query or the result."
     switch($RequestType)
     {
-        "get" {
+        "POST" {
             try{
                 # Build command
-                $Request = $Request.split("=")[1]
-                if($computer){
-                    # Invoke command on the target computer
-                    $Result = Invoke-Command -ComputerName $Computer -ScriptBlock {$Request} -ErrorAction Stop
-                }else{
+                $Request = $URL.split("/")[3]
+                
+                if($Request -like "Create-*" -OR $Request -like "New-*" -OR $Request -like "Invoke-*"){
                     # Invoke command on the local computer
                     $Result = Invoke-Expression -Command $Request -ErrorAction Stop
+                }
+                else{
+                    $Result = "Error: Not a Create or New or Invoke verb invoked"
                 }
             }catch{
                 # Build response
                 $Result = ("Error: " + $_.Exception.Message)
             }
         }
-        "wmi" {
+        "GET" {
             try{
                 # Build command
-                $Request = $Request.split("=")[1]
-                if($computer){
-                    # Invoke command on the target computer
-                    $Result = Get-WMIObject $Request -Computer $Computer -ErrorAction Stop | ConvertTo-Json
-                }else{
+                write-host $URL
+                $Request = $URL.split("/")[3]
+                
+                if($Request -like "Get-*"){
                     # Invoke command on the local computer
-                    $Result = Get-WMIObject $Request -ErrorAction Stop | ConvertTo-Json
+                    $Result = Invoke-Expression -Command $Request -ErrorAction Stop
+                }
+                else{
+                    $Result = "Error: Not a Get verb invoked"
+                }
+            }catch{
+                # Build response
+                $Result = ("Error: " + $_.Exception.Message)
+            }
+        }
+        "PUT" {
+            try{
+                # Build command
+                $Request = $URL.split("/")[3]
+                
+                if($Request -like "Set-*"){
+                    # Invoke command on the local computer
+                    $Result = Invoke-Expression -Command $Request -ErrorAction Stop
+                }
+                else{
+                    $Result = "Error: Not a Set verb invoked"
+                }
+            }catch{
+                # Build response
+                $Result = ("Error: " + $_.Exception.Message)
+            }
+        }
+        "DELETE" {
+            try{
+                # Build command
+                $Request = $URL.split("/")[3]
+                
+                if($Request -like "Remove-*"){
+                    # Invoke command on the local computer
+                    $Result = Invoke-Expression -Command $Request -ErrorAction Stop
+                }
+                else{
+                    $Result = "Error: Not a Remove verb invoked"
                 }
             }catch{
                 # Build response
@@ -46,11 +109,10 @@ param(
 }
 
 Function Start-PRListener {
+
     param(
         [parameter(Mandatory=$true)]
-        $ListingPort,
-        [parameter(Mandatory=$true)]
-        $TokenList
+        $ListingPort
     )
     # Create a listener on port specified
     $listener = New-Object System.Net.HttpListener
@@ -84,57 +146,16 @@ Function Start-PRListener {
                 break
             }
             else{
-                # If the request contains a token from the internal token list
-                if($TokenList.Token -contains ($requestvars[3].split("="))[1]){
-                    if($requestvars[4] -like "computer=*"){
-                        $computer = $requestvars[4].split("=")[1]
-                        $requesttype = $requestvars[5]
-                        $iurl = 6
-                    }else{
-                        $requesttype = $requestvars[4]
-                        $iurl = 5
-                    }
-
-                    # If a request is sent to http://:$ListingPort/
-                    # The switch may help to select the action type requested
-                    Switch($requesttype){
-                        
-                        "wmi" {
-                    
-                            # Start the function Invoke-PRCommand with parameters
-                            $IPR_Return = Invoke-PRCommand -requesttype Wmi -request $requestvars[$iurl] -Computer $computer
-                            $IPR_Return.gettype()
-                            if($IPR_Return -like "Error:*"){
-                                $IPR_Response.ContentType = 'text/html'
-                            }else{
-                                # Convert the returned data to JSON and set the HTTP content type to JSON
-                                $IPR_Response.ContentType = 'application/json'
-                            }
-                        }
-
-                        "get" {
-                            # Start the function Invoke-PRCommand with parameters
-                            $IPR_Return = Invoke-PRCommand -requesttype Get -request $requestvars[$iurl] -Computer $computer
-                            
-                            if($IPR_Return -like "Error:*"){
-                                $IPR_Response.ContentType = 'text/html'
-                            }else{
-                                # Convert the returned data to JSON and set the HTTP content type to JSON
-                                $IPR_Return = $IPR_Return | ConvertTo-Json
-                                $IPR_Response.ContentType = 'application/json'
-                            }
-                        }
-
-                        Default {
-                            # If no matching subdirectory/route is found generate a 404 message
-                            $IPR_Return = "This is not the page you're looking for."
-                            $IPR_Response.ContentType = 'text/html'
-                        }
-                    }
-                }else{
-                    $IPR_Return = "Wonderful ! You are on your POSH API! You don't have token yet, please read the doc to continue."
+                # Start the function Invoke-PRCommand with parameters
+                $IPR_Return = Invoke-PRCommand -RequestType $context.Request.HttpMethod -URL ([String]$request.Url)
+                $IPR_Return.gettype()
+                if($IPR_Return -like "Error:*"){
                     $IPR_Response.ContentType = 'text/html'
+                }else{
+                    # Convert the returned data to JSON and set the HTTP content type to JSON
+                    $IPR_Response.ContentType = 'application/json'
                 }
+            }
                 # Convert the data to UTF8 bytes
                 [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($IPR_Return)
                 
@@ -145,29 +166,16 @@ Function Start-PRListener {
                 $output = $IPR_Response.OutputStream
                 $output.Write($buffer, 0, $buffer.length)
                 $output.Close()
-            }
         }
     }
     
     #Terminate the listener
     $listener.Stop()
-
 }
-
-# Path to the CSV
-Do {
-    $PRCSVToken = Read-Host -Prompt "Path to your CSV Token File"
-}Until(Test-Path $PRCSVToken -include "*.csv")
 
 # Listenning port
 Do {
     [int]$PRPort = Read-Host -Prompt "Which port should I use ?"
 }Until($PRPort -ne $null)
 
-# CSV Token file format: UserName;Token
-#$CSVToken = "C:\Windows\Temp\POSH_Restful_API\token.csv"
-
-#Import TOKENS
-$TokenList = Import-CSV -Path $PRCSVToken -Delimiter ";" -Encoding UTF8
-
-Start-PRListener -ListingPort $PRPort -TokenList $TokenList
+Start-PRListener -ListingPort $PRPort
