@@ -1,30 +1,24 @@
 <#
 
-CODES STATUS
-
-200 OK Tout s'est bien passé
-
-201 Created La création de la ressource s'est bien passée (il n’est pas rare que les attributs de la nouvelle ressource soient aussi renvoyées dans la réponse. Dans ce cas, l’URL de cette ressource nouvellement créée est ajouté via un header Location )
-
-204 No content Même principe que pour la 201, sauf que cette fois-ci, le contenu de la ressource nouvellement créée ou modifiée n'est pas renvoyée en réponse
-
-304 Not modified Le contenu n'a pas été modifié depuis la dernière fois qu'elle a été mise en cache
-
-400 Bad request La demande n'a pas pu être traitée correctement
-
-401 Unauthorized L'authentification a échoué
-
-403 Forbidden L'accès à cette ressource n'est pas autorisé
-
-404 Not found La ressource n'existe pas
-
-405 Method not allowed La méthode HTTP utilisée n'est pas traitable par l'API
-
-406 Not acceptable L’API est dans l’incapacité de fournir le format demandé par les en têtes Accept. Par exemple, le client demande un format (XML par exemple) et l'API n'est pas prévue pour générer du XML
-
-500 Server error Le serveur a rencontré un problème.
+.SYNOPSIS
+  Start an API with custom actions and a JSON result returned.
+.DESCRIPTION
+  Configure custom actions (GET,POST,PUT,DELETE) with the TPL_POSHAPI.ps1 in the Modules directory.
+  Start your API with custom or default port and custom or default Modules directory.
+  Stop API by using /kill in API url. You could do it in a browser like http://localhost:8000/kill
+.PARAMETER APIPort
+    Custom listenning API's port. This is the port on which API will listenning. Example: http://localhost:8000
+.NOTES
+  Version:        1.1
+  Author:         Quentin Schweitzer
+  Creation Date:  2019-02-09
+  Purpose/Change: Major update with new actions management system.
+  
+.EXAMPLE
+  Invoke-PRCommand -APIPort 8000 -ModulesPath "C:\POSH_API\Modules"
 
 #>
+
 Function Start-PRListener {
     param(
         [parameter(Mandatory = $true)]
@@ -94,22 +88,24 @@ Function Start-PRListener {
             }
         }
     
-        $Context.request
+        #$Context.request
 
-        if($result -ne $null) {
+        if($result) {
             if($result -is [string]){
                 
-                Write-Verbose "A [string] object was returned. Writing it directly to the response stream."
+                Write-Host "A [string] object was returned. Writing it directly to the response stream."
 
             } else {
 
-                Write-Verbose "Converting PS Objects into JSON objects"
+                Write-Host "Converting PS Objects into JSON objects"
                 $result = $result | ConvertTo-Json
                 
             }
+        }else{
+            $result = "No result found"
         }
-
-        Write-Host "Sending response of $Result"
+        
+        Write-Host "Sending response of Result"
 
         # We convert the result to bytes from ASCII encoded text
         $buffer = [System.Text.Encoding]::UTF8.GetBytes($Result)
@@ -123,145 +119,55 @@ Function Start-PRListener {
         # We close the response to let the browser know we are done sending the response
         $Context.Response.Close()
 
-        $Context.Response
+        #$Context.Response
     }
 }
 Function Invoke-PRCommand {
+    param(
+        # Parameter help description
+        [Parameter (Mandatory=$False)]
+        [String]
+        $APIPort = 8000,
+        $ModulesPath = "$(Get-Location)\Modules"
+    )
 
-    $Noresult = "There is something wrong with your query or the result."
-    # Listenning port
-    Do {
-        [int]$PRPort = Read-Host -Prompt "Which port should I use ?"
-    }Until($PRPort -ne $null)
-
-    Start-PRListener -ListeningPort $PRPort -ScriptBlock {
+    Start-PRListener -ListeningPort $APIPort -ScriptBlock {
 
         [string]$URL = ($Context.Request.URL)
+        $split=$URL.split("/")
+        [string]$Verb = $split[3]
+        $Params = ""
+        # URL splitted, index start after the Verb
+        for ($index=4; $index -le $split.count; $index++) { $Params += $split[$index] + " " }
 
-        switch ($Context.Request.HttpMethod) {
-            "POST" {
-                try {
-                    # Build command
-                    #write-host ("URLfull= " + $URL)
-                    [string]$Verb = $URL.split("/")[3]
-                    
-                    if ($Verb -eq "CREATE" -OR $Verb -eq "NEW" -OR $Verb -eq "INVOKE") {
-                        #write-host ("Verb= " + $Verb)
-                        [string]$What2Do = $URL.split("/")[4]
-                        #write-host ("What2Do= " + $What2Do)
-                        [string]$Arguments = ""
-                    
-                        if ($URL.split("/").count -gt 5) {
-                            $Arguments = ($URL.split("/")[5]).replace("&","-").replace("="," ")
-                        }
-                        
-                        # Invoke command on the local computer
-                        [string]$Command = "$Verb-$What2Do $Arguments"
-                        Write-Host ("Command= " + $command )
-                        $Result = Invoke-Expression $Command -ErrorAction Stop
-                    }
-                    else {
-                        $Result = "Error: Not a Create or New or Invoke verb invoked"
-                    }
-                }
-                catch {
-                    # Build response
-                    $Result = ("Error: " + $_.Exception.Message)
-                }
-            }
-            "GET" {
-                try {
-                    # Build command
-                    #write-host ("URLfull= " + $URL)
-                    [string]$Verb = $URL.split("/")[3]
+        $ActionVerbs = @()
 
-                    if ($Verb -eq "GET"){
-                        #write-host ("Verb= " + $Verb)
-                        [string]$What2Do = $URL.split("/")[4]
-                        #write-host ("What2Do= " + $What2Do)
-                        [string]$Arguments = ""
-                    
-                        if ($URL.split("/").count -gt 5) {
-                            $Arguments = ($URL.split("/")[5]).replace("&","-").replace("="," ")
-                        }
-                        
-                        # Invoke command on the local computer
-                        [string]$Command = "$Verb-$What2Do $Arguments"
-                        Write-Host ("Command= " + $command )
-                        $Result = Invoke-Expression $Command -ErrorAction Stop
-                    }
-                    else {
-                        $Result = "Error: Not a Create or New or Invoke verb invoked"
-                    }
-                }
-                catch {
-                    # Build response
-                    $Result = ("Error: " + $_.Exception.Message + " " + $error)
-                }
+        #Load Modules
+        Get-ChildItem -Path $ModulesPath -Filter "*_*.ps1" -File | ForEach-Object {
+            $_Verb = New-Object -TypeName psobject
+            $_Verb | Add-Member -MemberType NoteProperty -Name "Type" -Value ($_.Name).Split("_")[0]
+            $_Verb | Add-Member -MemberType NoteProperty -Name "Verb" -Value ($_.Name).Split("_")[1].replace(".ps1","")
+            $ActionVerbs += $_Verb
+            Import-Module $_.FullName -force
+        }
+
+        # Get method of last request
+        $Method = $Context.Request.HttpMethod
+        try {
+            # Find which function the calling URL wants and invoke the command
+            if (($ActionVerbs | Where-Object {$_.Type -eq "$Method"}).Verb -contains $Verb){
+                $func = ($Method+"_"+$verb)
+                $Result = Invoke-Expression ($func + ' ' + $params)
             }
-            "PUT" {
-                try {
-                    # Build command
-                    #write-host ("URLfull= " + $URL)
-                    [string]$Verb = $URL.split("/")[3]
-                    
-                    if ($Verb -eq "SET") {
-                        #write-host ("Verb= " + $Verb)
-                        [string]$What2Do = $URL.split("/")[4]
-                        #write-host ("What2Do= " + $What2Do)
-                        [string]$Arguments = ""
-                    
-                        if ($URL.split("/").count -gt 5) {
-                            $Arguments = ($URL.split("/")[5]).replace("&","-").replace("="," ")
-                        }
-                        
-                        # Invoke command on the local computer
-                        [string]$Command = "$Verb-$What2Do $Arguments"
-                        Write-Host ("Command= " + $command )
-                        $Result = Invoke-Expression $Command -ErrorAction Stop
-                    }
-                    else {
-                        $Result = "Error: Not a Create or New or Invoke verb invoked"
-                    }
-                }
-                catch {
-                    # Build response
-                    $Result = ("Error: " + $_.Exception.Message)
-                }
-            }
-            "DELETE" {
-                try {
-                    # Build command
-                    #write-host ("URLfull= " + $URL)
-                    [string]$Verb = $URL.split("/")[3]
-                    
-                    if ($Verb -eq "REMOVE") {
-                        #write-host ("Verb= " + $Verb)
-                        [string]$What2Do = $URL.split("/")[4]
-                        #write-host ("What2Do= " + $What2Do)
-                        [string]$Arguments = ""
-                    
-                        if ($URL.split("/").count -gt 5) {
-                            $Arguments = ($URL.split("/")[5]).replace("&","-").replace("="," ")
-                        }
-                        
-                        # Invoke command on the local computer
-                        [string]$Command = "$Verb-$What2Do $Arguments"
-                        Write-Host ("Command= " + $command )
-                        $Result = Invoke-Expression $Command -ErrorAction Stop
-                    }
-                    else {
-                        $Result = "Error: Not a Create or New or Invoke verb invoked"
-                    }
-                }
-                catch {
-                    # Build response
-                    $Result = ("Error: " + $_.Exception.Message)
-                }
+            else {
+                $Result = "Error: Not a knew action verb"
             }
         }
+        catch {
+            # Build error reply
+            $Result = ("Error: " + $_.Exception.Message)
+        }
+        
         return $Result
     }
 }
-
-Invoke-PRCommand

@@ -13,33 +13,29 @@ Start the POSH API script on a server or computer which can access to others dev
 It also works with local computer/server.
 
 ## How to use
-### Create Token
-You have to create a token manually on a file called token.csv: C:\Windows\Temp\Posh_Restful_api\token.csv
-The file is formatted like: UserName;Token
-Separator: **;**
-/!\ If you use comma to split each column the reading of the token file will fail and you won't be able to use the API.
+
+### Configure your custom actions
+By default you have a Modules folder when downloading API.
+In this Module dir, use the TPL_POSHAPI.ps1 to build your own custom actions.
+You can change Modules location, just use -ModulesPath param when calling API's func.
+
+Module's .ps1 name and function define action verb and query method (GET,POST,PUT,DELETE) and what this function will return to API.
+You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
 ### Start API
-Start the .ps1 file ans the API will be alive.
-start from http://localhost:8000
+Import-Module RESTapi.ps1
+Use Invoke-PRCommand function and the API will be alive.
+By default API will start from http://localhost:8000
+
+You can change API port and API Modules location:
+Invoke-PRCommand -APIPort <yourport> -ModulesPath "..\Modules"
 
 ### Use API
-**If you don't specify a computer the request will be executed on the local hosting script machine.**
-#### GET
-To use the API, simply do a GET query to http://localhost:8000/token=yourtoken/(optional:computer=targetcomputer)/get/command=get-help
-for example.
+To use the API, simply do a query to http://localhost:8000/<actionverb>/param1/param2 for example.
 The API will return a JSON formatted result. If error, there is a text result displayed.
 You could use a web browser to query something or use other programming language to query.
 
-Query tested:
-- Get-Disk
-- Get-Process
-- Get-Service
-- Get-Service|?{$_.Name -match "Adobe"}
-- Get-ChildItem -Path "C:" | foreach {Get-ChildItem -Path $_.FullName}
-#### WMI
-There is a WMI query type but it's actually limited.
-http://localhost:8000/token=yourtoken/(optional:computer=targetcomputer)/wmi/query
+Some functions are available in the Modules directory.
 
 ### Stop API
 http://localhost:8000/kill
