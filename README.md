@@ -24,12 +24,16 @@ Module's .ps1 name and function define action verb and query method (GET,POST,PU
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
 ### Start API
-Import-Module RESTapi.ps1
-Use Invoke-PRCommand function and the API will be alive.
+> Import-Module .\RESTapi.ps1
+
+> Invoke-PRCommand
+
+Use **Invoke-PRCommand** function and the API will be alive.
 By default API will start from http://localhost:8000
 
 You can change API port and API Modules location:
-Invoke-PRCommand -APIPort <yourport> -ModulesPath "..\Modules"
+
+> Invoke-PRCommand -APIPort <yourport> -ModulesPath "..\Modules"
 
 ### Use API
 To use the API, simply do a query to http://localhost:8000/<actionverb>/param1/param2 for example.
