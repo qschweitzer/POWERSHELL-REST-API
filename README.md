@@ -33,7 +33,7 @@ By default API will start from http://localhost:8000
 
 You can change API port and API Modules location:
 
-> Invoke-PRCommand -APIPort <yourport> -ModulesPath "..\Modules"
+> Invoke-PRCommand -APIPort \<yourport> -ModulesPath "..\Modules"
 
 ### Use API
 To use the API, simply do a query to http://localhost:8000/<actionverb>/param1/param2 for example.
@@ -45,3 +45,15 @@ Some functions are available in the Modules directory.
 ### Stop API
 http://localhost:8000/kill
 or kill the script process.
+
+## Samples
+### Get Process with a given name
+http://localhost:8000/process/explorer
+### Get Service with a given name
+http://localhost:8000/service/update
+### Get disk with a given letter
+http://localhost:8000/disk/C
+### Get disk **without** a given letter (get all disks)
+http://localhost:8000/disk
+### Get connected users
+http://localhost:8000/connectedusers
