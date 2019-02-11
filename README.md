@@ -33,9 +33,9 @@ You could create everything you want, just use the template to be sure that API 
 Use **Invoke-PRCommand** function and the API will be alive.
 By default API will start from http://localhost:8000
 
-You can change API port and API Modules location:
+You can change API port, API Modules location and custom stop action to kill it:
 
-> Invoke-PRCommand -APIPort \<yourport> -ModulesPath "..\Modules"
+> Invoke-PRCommand -APIPort \<yourport> -ModulesPath "..\Modules" -StopAction kill
 
 ### Use API
 To use the API, simply do a query to http://localhost:8000/<actionverb>/param1/param2 for example.
@@ -45,8 +45,11 @@ You could use a web browser to query something or use other programming language
 Some functions are available in the Modules directory.
 
 ### Stop API
-http://localhost:8000/kill
-or kill the script process.
+By default you could use /kill action verb:
+> http://localhost:8000/kill
+
+You could define your own custom stop action:
+> Invoke-PRCommand -APIPort 8000 -ModulesPath "C:\POSH_API\Modules" -StopAction stop
 
 ## Samples
 ### Get Process with a given name
