@@ -53,7 +53,8 @@ or kill the script process.
 * Web Browser: http://localhost:8000/process/chrome
 * Powershell:
 > $test = Invoke-RestMethod -Method GET -Uri http://localhost:8000/process/chrome
-$test | select id,name,StartTime
+
+> $test | select id,name,StartTime
 
 ![Sample Process Chrome](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/samples/process_chrome/1.png)
 ### Get Service with a given name
