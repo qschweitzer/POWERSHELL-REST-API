@@ -1,4 +1,4 @@
-![API Diagram](https://github.com/qschweitzer/POSH-REST-API/blob/master/API_Diagram.png)
+![API Diagram](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/API_Diagram.png)
 # POSH REST API
 A Very Simple REST API
 Based on the idea and script of http://hkeylocalmachine.com/?p=518
@@ -23,7 +23,7 @@ You can change Modules location, just use -ModulesPath param when calling API's 
 Module's .ps1 name and function define **action verb** and **query method** (GET,POST,PUT,DELETE) and what this function will return to API.
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
-![API Function Sample](https://github.com/qschweitzer/POSH-REST-API/blob/master/POSH%20API%20FUNC%20SAMPLE.png)
+![API Function Sample](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/POSH%20API%20FUNC%20SAMPLE.png)
 
 ### Start API
 > Import-Module .\RESTapi.ps1
