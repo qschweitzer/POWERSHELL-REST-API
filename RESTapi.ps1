@@ -5,11 +5,15 @@
 .DESCRIPTION
   Configure custom actions (GET,POST,PUT,DELETE) with the TPL_POSHAPI.ps1 in the Modules directory.
   Start your API with custom or default port and custom or default Modules directory.
-  Stop API by using /kill in API url. You could do it in a browser like http://localhost:8000/kill
+  Stop API by using /kill by default or with your custom StopAction in API url. You could do it in a browser like http://localhost:8000/kill
 .PARAMETER APIPort
-    Custom listenning API's port. This is the port on which API will listenning. Example: http://localhost:8000
+  Custom listenning API's port. This is the port on which API will listenning. Example: http://localhost:8000
+.PARAMETER ModulesPath
+  Define a custom directory where your modules are.
+.PARAMETER StopAction
+  Define a custom stop action to kill API process.
 .NOTES
-  Version:        1.1
+  Version:        1.2
   Author:         Quentin Schweitzer
   Creation Date:  2019-02-09
   Purpose/Change: Major update with new actions management system.
@@ -23,14 +27,15 @@ Function Start-PRListener {
     param(
         [parameter(Mandatory = $true)]
         $ScriptBlock,
-        $ListeningPort
+        $ListeningPort,
+        $StopAction
     )
     # Create a listener on port specified
     $URL = "http://localhost:$ListeningPort/"
     # Create HttpListener Object
     write-host "Listening on port $ListeningPort..."
     $SimpleServer = New-Object Net.HttpListener
-    write-host "To Stop API Listner: $($URL)kill"
+    write-host "To Stop API Listner: $($URL)$($StopAction)"
 
     # Tell the HttpListener what port to listen on
     #    As long as we use localhost we don't need admin rights. To listen on externally accessible IP addresses we will need admin rights
@@ -69,7 +74,7 @@ Function Start-PRListener {
         [string]$URLActive = $Context.Request.Url
 
         # Creating a friendly way to shutdown the server
-        if($Context.Request.Url.LocalPath -eq "/kill")
+        if($Context.Request.Url.LocalPath -eq "/$($StopAction)")
         {
 
                     $Context.Response.Close()
@@ -128,10 +133,11 @@ Function Invoke-PRCommand {
         [Parameter (Mandatory=$False)]
         [String]
         $APIPort = 8000,
-        $ModulesPath = "$(Get-Location)\Modules"
+        $ModulesPath = "$(Get-Location)\Modules",
+        $StopAction = "kill"
     )
 
-    Start-PRListener -ListeningPort $APIPort -ScriptBlock {
+    Start-PRListener -ListeningPort $APIPort -StopAction $StopAction -ScriptBlock {
 
         [string]$URL = ($Context.Request.URL)
         $split=$URL.split("/")
