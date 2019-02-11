@@ -20,7 +20,7 @@ By default you have a Modules folder when downloading API.
 In this Module dir, use the TPL_POSHAPI.ps1 to build your own custom actions.
 You can change Modules location, just use -ModulesPath param when calling API's func.
 
-Module's .ps1 name and function define action verb and query method (GET,POST,PUT,DELETE) and what this function will return to API.
+Module's .ps1 name and function define **action verb** and **query method** (GET,POST,PUT,DELETE) and what this function will return to API.
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
 ### Start API
