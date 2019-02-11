@@ -11,6 +11,7 @@ You are able to request some information to a server with Powershell command and
 
 Start the POSH API script on a server or computer which can access to others devices with Powershell and run.
 It also works with local computer/server.
+
 ![API Illustration](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/API_illustrate.png)
 ## How to use
 
