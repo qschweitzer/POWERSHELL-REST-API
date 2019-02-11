@@ -12,7 +12,7 @@ You are able to request some information to a server with Powershell command and
 
 Start the POSH API script on a server or computer which can access to others devices with Powershell and run.
 It also works with local computer/server.
-
+![API Illustration](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/API_illustrate.png)
 ## How to use
 
 ### Configure your custom actions
@@ -24,6 +24,7 @@ Module's .ps1 name and function define **action verb** and **query method** (GET
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
 ![API Function Sample](https://github.com/qschweitzer/POSH-REST-API/blob/master/DOCS/POSH%20API%20FUNC%20SAMPLE.png)
+
 
 ### Start API
 > Import-Module .\RESTapi.ps1
