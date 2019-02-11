@@ -1,3 +1,4 @@
+![API Diagram](https://github.com/qschweitzer/POSH-REST-API/blob/master/API_Diagram.png)
 # POSH REST API
 A Very Simple REST API
 Based on the idea and script of http://hkeylocalmachine.com/?p=518
