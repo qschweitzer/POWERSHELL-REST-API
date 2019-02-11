@@ -6,7 +6,7 @@ Based on the idea and script of http://hkeylocalmachine.com/?p=518
 **Don't use it in a production environment. It's a Proof Of Concept project, maybe after a lot of commit and improvment this idea will be really safe and usefull but it's not the case for now.**
 
 ## Concept
-Based on the API concept, this project want to simplify the use of Powershell querying from another language, another plateform.
+Based on the API concept, the goal project is to simplify the use of Powershell querying from any language.
 You should be able to make a dashboard with POSH queries without any Powershell line.
 You are able to request some information to a server with Powershell command and have a JSON result if it works or a text result with the error description if it doesn't.
 
