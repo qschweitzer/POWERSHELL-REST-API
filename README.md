@@ -1,4 +1,4 @@
-# POSH REST API
+# POWERSHELL REST API
 A Very Simple REST API
 Based on the idea and script of http://hkeylocalmachine.com/?p=518
 
