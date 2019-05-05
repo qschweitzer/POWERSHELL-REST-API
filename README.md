@@ -12,7 +12,7 @@ You are able to request some information to a server with Powershell command and
 Start the POSH API script on a server or computer which can access to others devices with Powershell and run.
 It also works with local computer/server.
 
-![API Illustration](https://cdn.rawgit.com/qschweitzer/POSH-REST-API/blob/master/DOCS/API_illustrate.png)
+![API Illustration](https://rawcdn.githack.com/qschweitzer/POWERSHELL-REST-API/51e234a035b392e3f8be4fde897c4f4ef047d101/DOCS/API_illustrate.png)
 ## How to use
 
 ### Configure your custom actions
@@ -23,7 +23,7 @@ You can change Modules location, just use -ModulesPath param when calling API's 
 Module's .ps1 name and function define **action verb** and **query method** (GET,POST,PUT,DELETE) and what this function will return to API.
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
-![API Function Sample](https://cdn.rawgit.com/qschweitzer/POSH-REST-API/blob/master/DOCS/POSH%20API%20FUNC%20SAMPLE.png)
+![API Function Sample](https://rawcdn.githack.com/qschweitzer/POWERSHELL-REST-API/51e234a035b392e3f8be4fde897c4f4ef047d101/DOCS/POSH API FUNC SAMPLE.png)
 
 
 ### Start API
@@ -60,7 +60,7 @@ You could define your own custom stop action:
 
 > $test | select id,name,StartTime
 
-![Sample Process Chrome](https://cdn.rawgit.com/qschweitzer/POSH-REST-API/blob/master/DOCS/samples/process_chrome/1.png)
+![Sample Process Chrome](https://rawcdn.githack.com/qschweitzer/POWERSHELL-REST-API/51e234a035b392e3f8be4fde897c4f4ef047d101/DOCS/samples/process_chrome/1.png)
 ### Get Service with a given name
 http://localhost:8000/service/update
 ### Get disk with a given letter
