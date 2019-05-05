@@ -23,7 +23,7 @@ You can change Modules location, just use -ModulesPath param when calling API's 
 Module's .ps1 name and function define **action verb** and **query method** (GET,POST,PUT,DELETE) and what this function will return to API.
 You could create everything you want, just use the template to be sure that API will load your module. No need to restart API to test your function.
 
-![API Function Sample]("https://rawcdn.githack.com/qschweitzer/POWERSHELL-REST-API/51e234a035b392e3f8be4fde897c4f4ef047d101/DOCS/POSH API FUNC SAMPLE.png")
+![API Function Sample]('https://rawcdn.githack.com/qschweitzer/POWERSHELL-REST-API/51e234a035b392e3f8be4fde897c4f4ef047d101/DOCS/POSH API FUNC SAMPLE.png')
 
 
 ### Start API
